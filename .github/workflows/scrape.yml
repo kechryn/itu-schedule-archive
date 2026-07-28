@@ -1,0 +1,46 @@
+name: Scrape ITU Courses
+
+on:
+  schedule:
+    # Run at 03:00 UTC on the 1st and 15th of every month
+    - cron: '0 3 1,15 * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+# Needed to push the refreshed course data back to the repository.
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Writes public/data/terms/<term>.json and updates public/data/index.json.
+      # No database involved — the JSON files are the source of truth.
+      - name: Run scraper
+        run: npm run scrape
+
+      - name: Commit updated course data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          if git diff --staged --quiet; then
+            echo "No course changes to commit."
+          else
+            git commit -m "data: Refresh course schedules ($(date -u +%Y-%m-%d))"
+            git push
+            echo "Pushed updated course data — Cloudflare Pages will redeploy."
+          fi
