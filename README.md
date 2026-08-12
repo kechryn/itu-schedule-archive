@@ -50,8 +50,8 @@ directory of HTML, JS and JSON to `out/`, which costs nothing to host.
 
 ```
 public/data/
-  index.json                    # 26 terms: id, name, course count, levels (~4 KB)
-  terms/2025-2026-fall.json     # every course in that term (~90 KB brotli)
+  index.json                    # 27 terms: id, name, course count, levels (~4 KB)
+  terms/2026-2027-fall.json     # every course in that term (~90 KB brotli)
   terms/2025-2026-spring.json
   ...
 ```
