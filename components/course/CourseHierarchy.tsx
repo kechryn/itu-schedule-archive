@@ -1,19 +1,38 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Filter, BookOpen, AlertCircle } from 'lucide-react';
 import CourseTable from './CourseTable';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import ModernSelect from '@/components/ui/ModernSelect';
 import { getTerm, TermStore } from '@/lib/data/client';
 import { parseTermName, type TermSummary } from '@/lib/data/courseData';
+import {
+    INDEX_PAGE_KEYS,
+    TERM_PAGE_KEYS,
+    parseFilters,
+    serializeFilters,
+} from '@/lib/browse/filterParams';
 
 interface Props {
     termId: string;
     terms?: TermSummary[];
+    /**
+     * True on /archive/<termId>/, where the term is the URL rather than a
+     * filter. Changing it there navigates to that term's page instead of
+     * swapping the table in place — otherwise the heading, the canonical tag
+     * and the structured data all keep describing the term you left.
+     */
+    termInRoute?: boolean;
 }
 
-export default function CourseHierarchy({ termId: initialTermId, terms = [] }: Props) {
+export default function CourseHierarchy({
+    termId: initialTermId,
+    terms = [],
+    termInRoute = false,
+}: Props) {
+    const router = useRouter();
     // Terms arrive prerendered from the build, so the year/season selectors
     // are populated on first paint with no request.
     const parsedTerms = useMemo(
@@ -110,6 +129,76 @@ export default function CourseHierarchy({ termId: initialTermId, terms = [] }: P
         [store, selectedSubject, selectedLevel]
     );
 
+    const urlKeys = termInRoute ? TERM_PAGE_KEYS : INDEX_PAGE_KEYS;
+
+    // Read the query string once, after mount, rather than during render.
+    // A statically exported page is prerendered with no query string at all,
+    // so reading it any earlier would render markup the server never produced
+    // and break hydration.
+    const [restored, setRestored] = useState(false);
+    useEffect(() => {
+        const wanted = parseFilters(window.location.search);
+
+        if (!termInRoute && wanted.year) {
+            setSelectedYear(wanted.year);
+            if (wanted.season) setRequestedSeason(wanted.season);
+            // Claim the term this render would otherwise treat as a change,
+            // whose reset would wipe the level and subject restored below.
+            const forYear = parsedTerms.filter((t) => t.year === wanted.year);
+            const term = forYear.find((t) => t.season === wanted.season) ?? forYear[0];
+            if (term) setRenderedTermId(term.id);
+        }
+
+        if (wanted.level) setSelectedLevel(wanted.level);
+        if (wanted.subject) setSelectedSubject(wanted.subject);
+
+        setRestored(true);
+        // Mount only: the URL is the input here, and after this the state owns it.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Write state back out. Gated on `restored` so this does not overwrite the
+    // incoming query with defaults before it has been read.
+    useEffect(() => {
+        if (!restored) return;
+
+        // The term the page already defaults to is left out, so a plain
+        // drill-down does not rewrite /archive/ into
+        // /archive/?year=2026-2027&season=Fall on load.
+        const isDefaultTerm =
+            selectedYear === initialTerm?.year && selectedSeason === initialTerm?.season;
+
+        const query = serializeFilters(
+            {
+                year: isDefaultTerm ? '' : selectedYear,
+                season: isDefaultTerm ? '' : selectedSeason,
+                level: selectedLevel,
+                subject: selectedSubject,
+            },
+            urlKeys
+        );
+
+        if (query === window.location.search) return;
+
+        // replaceState, not push: four selects would otherwise stack four
+        // history entries and the back button would walk the drill-down
+        // backwards instead of leaving the page.
+        window.history.replaceState(null, '', `${window.location.pathname}${query}`);
+    }, [restored, selectedYear, selectedSeason, selectedLevel, selectedSubject, urlKeys, initialTerm]);
+
+    /** On a term page the term is the route, so switching it is a navigation. */
+    const changeTerm = (year: string, season: string) => {
+        if (!termInRoute) {
+            setSelectedYear(year);
+            setRequestedSeason(season);
+            return;
+        }
+
+        const forYear = parsedTerms.filter((t) => t.year === year);
+        const term = forYear.find((t) => t.season === season) ?? forYear[0];
+        if (term) router.push(`/archive/${term.id}/`);
+    };
+
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
 
@@ -135,14 +224,14 @@ export default function CourseHierarchy({ termId: initialTermId, terms = [] }: P
                                     <ModernSelect
                                         label="Year"
                                         value={selectedYear}
-                                        onChange={setSelectedYear}
+                                        onChange={(year) => changeTerm(year, requestedSeason)}
                                         options={uniqueYears.map(y => ({ label: y, value: y }))}
                                         placeholder="Year"
                                     />
                                     <ModernSelect
                                         label="Semester"
                                         value={selectedSeason}
-                                        onChange={setRequestedSeason}
+                                        onChange={(season) => changeTerm(selectedYear, season)}
                                         options={availableSeasons}
                                         placeholder="Select Semester"
                                         disabled={!selectedYear}

@@ -20,6 +20,23 @@ Search matches course codes, titles and instructors. It strips diacritics and
 folds `ı` and `İ` onto `i`, so `bilgisayar` matches `Bilgisayar` and `ISL`
 matches `İŞL`.
 
+The drill-down lives in the query string — `/archive/?level=undergraduate&subject=BLG`
+— so a refresh keeps your place and a filtered view can be linked. On a term
+page the term is the path, so only `level` and `subject` are carried there, and
+changing the term navigates to that term's page rather than swapping the table
+underneath a heading that still names the old one.
+
+State is written with `replaceState`, not `pushState`: four selects would
+otherwise stack four history entries and the back button would walk the
+drill-down backwards instead of leaving the page. The term the page already
+defaults to is left out of the query, so `/archive/` stays clean until you
+actually change something.
+
+Filters are a query string rather than path segments on purpose. A page per
+combination would mean prerendering 46,124 course-and-term pages, roughly
+1.5 GB of HTML — past what GitHub Pages will publish, and mostly thin
+near-duplicates of each other.
+
 ### Wizard
 
 A four-step schedule builder:

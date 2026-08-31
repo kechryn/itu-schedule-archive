@@ -39,7 +39,7 @@ export default function CourseBrowser({ termId, termName, terms }: { termId: str
                 </div>
 
                 {/* Content - STRICT LEGACY FLOW */}
-                <CourseHierarchy termId={termId} terms={terms} />
+                <CourseHierarchy termId={termId} terms={terms} termInRoute />
             </div>
         </div>
     );
