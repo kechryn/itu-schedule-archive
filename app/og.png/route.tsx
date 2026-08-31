@@ -18,6 +18,10 @@ const size = { width: 1200, height: 630 };
  *
  * Generated from the data index rather than drawn by hand, so the term range
  * and section count on the card cannot drift away from the archive.
+ *
+ * One card serves both languages, in Turkish: it is the default language and
+ * the audience's, and a second image would double the build for a thumbnail
+ * whose numbers carry most of the meaning.
  */
 export async function GET() {
     const stats = getArchiveStats();
@@ -50,7 +54,7 @@ export async function GET() {
                             fontWeight: 700,
                         }}
                     >
-                        Istanbul Technical University
+                        İstanbul Teknik Üniversitesi
                     </div>
                     <div
                         style={{
@@ -62,7 +66,7 @@ export async function GET() {
                             lineHeight: 1.05,
                         }}
                     >
-                        Course Schedule Archive
+                        Ders Programı Arşivi
                     </div>
                     <div
                         style={{
@@ -72,16 +76,16 @@ export async function GET() {
                             marginTop: 24,
                         }}
                     >
-                        Browse every term. Build a conflict-free timetable.
+                        Bütün dönemler. Çakışmasız ders programı.
                     </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 64 }}>
-                    <Stat value={stats.courseCount.toLocaleString('en-US')} label="course sections" />
-                    <Stat value={String(stats.termCount)} label="terms" />
+                    <Stat value={stats.courseCount.toLocaleString('tr-TR')} label="ders şubesi" />
+                    <Stat value={String(stats.termCount)} label="dönem" />
                     <Stat
                         value={`${termLabel(oldest.year, oldest.season).split(' ')[0].slice(0, 4)}–${newest.year.slice(5)}`}
-                        label="years covered"
+                        label="yıl"
                     />
                 </div>
             </div>

@@ -8,6 +8,8 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 import ModernSelect from '@/components/ui/ModernSelect';
 import { getTerm, TermStore } from '@/lib/data/client';
 import { parseTermName, type TermSummary } from '@/lib/data/courseData';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { localePath } from '@/lib/i18n/config';
 import {
     INDEX_PAGE_KEYS,
     TERM_PAGE_KEYS,
@@ -33,6 +35,7 @@ export default function CourseHierarchy({
     termInRoute = false,
 }: Props) {
     const router = useRouter();
+    const { locale, t } = useI18n();
     // Terms arrive prerendered from the build, so the year/season selectors
     // are populated on first paint with no request.
     const parsedTerms = useMemo(
@@ -196,7 +199,7 @@ export default function CourseHierarchy({
 
         const forYear = parsedTerms.filter((t) => t.year === year);
         const term = forYear.find((t) => t.season === season) ?? forYear[0];
-        if (term) router.push(`/archive/${term.id}/`);
+        if (term) router.push(localePath(locale, `/archive/${term.id}`));
     };
 
     return (
@@ -213,27 +216,27 @@ export default function CourseHierarchy({
                             <div className="w-10 h-10 rounded-xl bg-blue-100/50 flex items-center justify-center text-blue-600">
                                 <Filter className="w-5 h-5" />
                             </div>
-                            Browse Archive
+                            {t.archive.browse}
                         </h3>
 
                         <div className="grid md:grid-cols-3 gap-8">
                             {/* Step 1: Term (Split into Year & Season) */}
                             <div className="space-y-3">
-                                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider ml-1">1. Academic Term</label>
+                                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider ml-1">{t.archive.stepTerm}</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <ModernSelect
-                                        label="Year"
+                                        label={t.archive.year}
                                         value={selectedYear}
                                         onChange={(year) => changeTerm(year, requestedSeason)}
                                         options={uniqueYears.map(y => ({ label: y, value: y }))}
-                                        placeholder="Year"
+                                        placeholder={t.archive.selectYear}
                                     />
                                     <ModernSelect
-                                        label="Semester"
+                                        label={t.archive.semester}
                                         value={selectedSeason}
                                         onChange={(season) => changeTerm(selectedYear, season)}
                                         options={availableSeasons}
-                                        placeholder="Select Semester"
+                                        placeholder={t.archive.selectSemester}
                                         disabled={!selectedYear}
                                     />
                                 </div>
@@ -241,7 +244,7 @@ export default function CourseHierarchy({
 
                             {/* Step 2: Level */}
                             <div className={`space-y-3 transition-opacity duration-300 ${!currentTermId ? 'opacity-40 pointer-events-none' : ''}`}>
-                                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider ml-1">2. Course Level</label>
+                                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider ml-1">{t.archive.stepLevel}</label>
                                 <div className="flex flex-wrap gap-2">
                                     {levels.length > 0 ? (
                                         levels.map((lvl) => (
@@ -259,7 +262,7 @@ export default function CourseHierarchy({
                                     ) : (
                                         <div className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-sm font-medium flex items-center justify-center gap-2">
                                             <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-300 border-t-transparent"></div>
-                                            Loading...
+                                            {t.archive.loading}
                                         </div>
                                     )}
                                 </div>
@@ -267,12 +270,12 @@ export default function CourseHierarchy({
 
                             {/* Step 3: Subject */}
                             <div className={`space-y-3 transition-opacity duration-300 ${!selectedLevel ? 'opacity-40 pointer-events-none' : ''}`}>
-                                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider ml-1">3. Subject Code</label>
+                                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider ml-1">{t.archive.stepSubject}</label>
                                 <ModernSelect
                                     value={selectedSubject}
                                     onChange={setSelectedSubject}
                                     options={subjects.map(s => ({ label: s, value: s }))}
-                                    placeholder={loading && selectedLevel ? 'Loading…' : 'Select Code'}
+                                    placeholder={loading && selectedLevel ? t.archive.loadingShort : t.archive.selectCode}
                                     disabled={!selectedLevel || subjects.length === 0}
                                     className="w-full"
                                 />
@@ -289,8 +292,8 @@ export default function CourseHierarchy({
                         <div className="w-20 h-20 rounded-3xl bg-white shadow-lg shadow-red-100 flex items-center justify-center mb-6 ring-1 ring-red-100">
                             <AlertCircle className="w-8 h-8 text-red-500" />
                         </div>
-                        <p className="text-2xl font-bold text-slate-700 mb-2">Something went wrong</p>
-                        <p className="text-slate-500 font-medium max-w-xs text-center">Could not load courses for this term. Please try again.</p>
+                        <p className="text-2xl font-bold text-slate-700 mb-2">{t.archive.errorTitle}</p>
+                        <p className="text-slate-500 font-medium max-w-xs text-center">{t.archive.errorBody}</p>
                     </div>
                 </ScrollReveal>
             ) : selectedSubject ? (
@@ -301,7 +304,7 @@ export default function CourseHierarchy({
                                 <h2 className="text-5xl font-black text-slate-900 tracking-tighter mb-2">
                                     {selectedSubject}
                                 </h2>
-                                <p className="text-lg text-slate-500 font-medium">Found {courses.length} classes available</p>
+                                <p className="text-lg text-slate-500 font-medium">{t.archive.foundClasses(courses.length)}</p>
                             </div>
                         </div>
 
@@ -318,16 +321,16 @@ export default function CourseHierarchy({
                                 <div className="w-20 h-20 rounded-3xl bg-white shadow-lg shadow-slate-200/50 flex items-center justify-center mb-6 ring-1 ring-slate-100">
                                     <BookOpen className="w-8 h-8 text-blue-500" />
                                 </div>
-                                <p className="text-2xl font-bold text-slate-700 mb-2">Ready to explore</p>
-                                <p className="text-slate-500 font-medium max-w-xs text-center">Select a <span className="text-blue-600">Subject Code</span> above to view the full schedule.</p>
+                                <p className="text-2xl font-bold text-slate-700 mb-2">{t.archive.readyTitle}</p>
+                                <p className="text-slate-500 font-medium max-w-xs text-center">{t.archive.readyBodyLead}<span className="text-blue-600">{t.archive.readyBodyAccent}</span>{t.archive.readyBodyTail}</p>
                             </>
                         ) : (
                             <>
                                 <div className="w-20 h-20 rounded-3xl bg-white shadow-lg shadow-slate-200/50 flex items-center justify-center mb-6 ring-1 ring-slate-100">
                                     <Filter className="w-8 h-8 text-slate-400" />
                                 </div>
-                                <p className="text-2xl font-bold text-slate-700 mb-2">Start Browsing</p>
-                                <p className="text-slate-500 font-medium max-w-xs text-center">Select a <span className="text-blue-600">Term and Level</span> to begin your search.</p>
+                                <p className="text-2xl font-bold text-slate-700 mb-2">{t.archive.startTitle}</p>
+                                <p className="text-slate-500 font-medium max-w-xs text-center">{t.archive.startBodyLead}<span className="text-blue-600">{t.archive.startBodyAccent}</span>{t.archive.startBodyTail}</p>
                             </>
                         )}
                     </div>

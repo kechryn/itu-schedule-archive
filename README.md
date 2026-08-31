@@ -154,14 +154,48 @@ output directory `out`, no environment variables. `public/_headers` sets
 immutable caching for hashed assets and `stale-while-revalidate` for the course
 JSON. GitHub Pages ignores that file and sends its own cache headers.
 
+## Languages
+
+Turkish and English. Turkish is the default and sits at the root — the audience
+is ITU students and the queries are Turkish — with English under `/en`.
+
+Paths stay in English in both trees: `/archive/` is Turkish, `/en/archive/` is
+English. Translating the segments would have 404'd every already-published URL,
+and a keyword in the path is a far weaker signal than the same keyword in the
+title, heading and body.
+
+Only the interface is translated. Course titles, instructor names and building
+codes are what OBS published and stay exactly as they are — a translated course
+title would not match the official system, or what a student is searching for.
+The one exception is the season, which the Turkish pages render as Güz, Bahar
+and Yaz, because `2026-2027 Güz ders programı` is the phrase people type.
+
+`lib/i18n/dictionaries.ts` holds both languages. Turkish is typed as
+`typeof en`, so a missing translation is a compile error rather than an English
+string appearing on a Turkish page.
+
+There are two root layouts, `app/(tr)` and `app/(en)`, rather than one. Only a
+root layout can set `<html lang>`, and it has to say `tr` on the Turkish pages;
+a single layout has no way to know which language it is rendering, because the
+locale is the route and a root layout receives no params. Client components read
+the language from a context (`components/i18n/LocaleProvider.tsx`); server
+components call `getDictionary` directly.
+
 ## Discoverability
 
-Every route sets its own title, description and canonical URL. The 27 term
-pages are the ones people search for, so `generateMetadata` gives each its own
-— naming the term both as `2026-2027 Fall` and by the Turkish name OBS
-publishes, because students search for either.
+Every route sets its own title, description and canonical URL in both
+languages. The 27 term pages are the ones people search for, so
+`generateMetadata` gives each its own: the Turkish page titles itself
+`2026-2027 Güz Ders Programı` and carries the name OBS publishes in the
+description, so both forms are matchable.
 
-- `app/sitemap.ts` emits `sitemap.xml` for all 32 URLs. Term pages carry the
+Each page declares the hreflang cluster — `tr`, `en` and `x-default` pointing at
+Turkish — in its head and again in the sitemap. Without it the two versions
+compete as near-duplicates instead of being understood as one page in two
+languages.
+
+- `app/sitemap.ts` emits `sitemap.xml` for all 64 URLs — every route in both
+  languages, each entry carrying the hreflang set. Term pages carry the
   scraper's timestamp as `lastModified` rather than the build time, so
   rebuilding unchanged data does not re-date the whole archive.
 - `app/robots.ts` emits `robots.txt`. It names the assistant crawlers
@@ -231,17 +265,27 @@ clearing high-severity advisories in the `postcss` and `sharp` it pulls in.
 
 ```
 app/                     Routes (Next.js App Router)
-  archive/[termId]/      One static page per term, via generateStaticParams
+  (tr)/                  Turkish tree, served from the root
+  (en)/en/               English tree
+                         Two root layouts, one per language — see Languages
+  robots.ts sitemap.ts   Generated at build time
+  og.png/ llms.txt/      Route handlers, shared by both languages
 
 components/
   course/                Archive browsing: CourseBrowser, CourseHierarchy, CourseTable, Timetable
   calendar/              Weekly planner: CourseSelector, ExportImportToolbar, CalendarHelp
   wizard/                Wizard and its four steps
-  layout/                Navbar
+  layout/                Navbar, RootShell (the shared document)
   ui/                    ModernSelect, ScrollReveal, InfoModal
   archive/               ArchiveHelp
+  pages/                 Page bodies, shared by both language trees
+  i18n/                  LocaleProvider — the language, for client components
+  seo/                   JsonLd
 
 lib/
+  i18n/                  config.ts (locales, path helpers), dictionaries.ts (strings)
+  seo/                   site.ts (URLs, metadata, hreflang), jsonLd.ts, csp.ts
+  browse/                filterParams.ts — the archive drill-down in the query string
   data/                  courseData.ts (schema), client.ts (browser data layer),
                          build.ts (build-time reader for Server Components)
   schedule/              scheduler.ts — conflict-free schedule generation

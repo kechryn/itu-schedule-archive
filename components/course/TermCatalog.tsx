@@ -5,7 +5,7 @@ import type { CatalogSubject } from '@/lib/data/build';
  *
  * The interactive table above this is client-side and starts empty, so without
  * this section the page carries no course text at all — nothing for a search
- * engine to match "ITU BLG 102E" against, and nothing for an assistant to read.
+ * engine to match "İTÜ BLG 102E" against, and nothing for an assistant to read.
  * It doubles as a plain index for anyone who would rather scan than filter.
  *
  * Each item is one text node with no nested elements and no per-item classes.
@@ -13,13 +13,18 @@ import type { CatalogSubject } from '@/lib/data/build';
  * the RSC payload inline in the same document, so every wrapper element here
  * is paid for twice. Styling the children from the list collapsed these pages
  * from 2 MB to a fraction of it.
+ *
+ * Course codes and titles are never translated — they are what OBS publishes
+ * and what a student is searching for.
  */
 export default function TermCatalog({
     catalog,
-    termLabel,
+    heading,
+    intro,
 }: {
     catalog: CatalogSubject[];
-    termLabel: string;
+    heading: string;
+    intro: (courses: string, subjects: number) => string;
 }) {
     if (catalog.length === 0) return null;
 
@@ -28,12 +33,10 @@ export default function TermCatalog({
     return (
         <section aria-labelledby="course-index" className="pt-10 mt-4 border-t border-slate-200">
             <h2 id="course-index" className="text-xl font-bold text-slate-900 font-display">
-                All courses in {termLabel}
+                {heading}
             </h2>
             <p className="mt-2 text-sm text-slate-500 max-w-2xl leading-relaxed">
-                {courseCount.toLocaleString('en-US')} courses across {catalog.length} subject
-                codes, with the number of sections in brackets. Use the filters above for
-                meeting times, instructors and capacity.
+                {intro(courseCount.toLocaleString('en-US'), catalog.length)}
             </p>
 
             <div className="mt-8 space-y-8">

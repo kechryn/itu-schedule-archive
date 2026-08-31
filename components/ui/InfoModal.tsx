@@ -3,6 +3,7 @@
 import { X, Info } from 'lucide-react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 interface InfoModalProps {
     isOpen: boolean;
@@ -12,6 +13,8 @@ interface InfoModalProps {
 }
 
 export default function InfoModal({ isOpen, onClose, title, children }: InfoModalProps) {
+    const { t } = useI18n();
+
     // Lock body scroll while the modal is open.
     useEffect(() => {
         if (!isOpen) return;
@@ -64,7 +67,7 @@ export default function InfoModal({ isOpen, onClose, title, children }: InfoModa
                         onClick={onClose}
                         className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20"
                     >
-                        Got it
+                        {t.modal.gotIt}
                     </button>
                 </div>
             </div>

@@ -10,6 +10,7 @@ import StepFourResults from './StepFourResults';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 
 import type { ScheduleConstraints } from '@/lib/schedule/scheduler';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 export interface SelectiveGroupDraft {
     id: string;
@@ -41,6 +42,7 @@ const INITIAL_STATE: WizardState = {
 };
 
 export default function Wizard() {
+    const { t } = useI18n();
     const [step, setStep] = useState(FIRST_STEP);
     const [data, setData] = useState<WizardState>(INITIAL_STATE);
 
@@ -72,10 +74,10 @@ export default function Wizard() {
             <ScrollReveal>
                 <div className="relative z-20 mb-8 p-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg shadow-slate-200/50 border border-slate-200/50 inline-flex flex-wrap items-center justify-center gap-1 sm:gap-2">
                     {[
-                        { id: 1, label: 'Term', icon: Calendar },
-                        { id: 2, label: 'Courses', icon: BookOpen },
-                        { id: 3, label: 'Preferences', icon: Settings },
-                        { id: 4, label: 'Schedule', icon: CheckCircle }
+                        { id: 1, label: t.wizard.steps.term, icon: Calendar },
+                        { id: 2, label: t.wizard.steps.courses, icon: BookOpen },
+                        { id: 3, label: t.wizard.steps.preferences, icon: Settings },
+                        { id: 4, label: t.wizard.steps.schedule, icon: CheckCircle }
                     ].map((s) => (
                         <div
                             key={s.id}
@@ -121,7 +123,7 @@ export default function Wizard() {
                             disabled={step === 1}
                             className="px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2 font-bold text-sm shadow-sm"
                         >
-                            <ChevronLeft className="w-4 h-4" /> Back
+                            <ChevronLeft className="w-4 h-4" /> {t.wizard.back}
                         </button>
 
                         {step < 4 ? (
@@ -133,7 +135,7 @@ export default function Wizard() {
                                 }
                                 className="group px-8 py-3 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-sm shadow-md active:scale-95"
                             >
-                                Next Step <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                {t.wizard.next} <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
                         ) : null}
                     </div>

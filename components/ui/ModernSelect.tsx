@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check, Search } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 interface Option {
     label: string;
@@ -24,12 +25,13 @@ export default function ModernSelect({
     value,
     onChange,
     options,
-    placeholder = 'Select...',
+    placeholder,
     disabled = false,
     className = '',
     label,
     searchable = false
 }: ModernSelectProps) {
+    const { t } = useI18n();
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -174,7 +176,7 @@ export default function ModernSelect({
                     }`}
             >
                 <span className={`truncate ${!selectedOption ? 'text-slate-400 font-normal' : ''}`}>
-                    {selectedOption ? selectedOption.label : placeholder}
+                    {selectedOption ? selectedOption.label : (placeholder ?? t.select.placeholder)}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
             </button>
@@ -198,7 +200,7 @@ export default function ModernSelect({
                                 <input
                                     ref={searchInputRef}
                                     type="text"
-                                    placeholder="Type to search..."
+                                    placeholder={t.select.search}
                                     value={searchTerm}
                                     onChange={(e) => { setSearchTerm(e.target.value); setHighlightedIndex(0); }}
                                     onKeyDown={handleKeyDown}
@@ -231,7 +233,7 @@ export default function ModernSelect({
                             ))
                         ) : (
                             <div className="px-4 py-8 text-center text-xs text-slate-400 font-medium">
-                                No options match &ldquo;{searchTerm}&rdquo;
+                                {t.select.noMatch(searchTerm)}
                             </div>
                         )}
                     </div>

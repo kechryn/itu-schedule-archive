@@ -6,9 +6,12 @@ import { ArrowLeft } from 'lucide-react';
 import CourseHierarchy from './CourseHierarchy';
 import { useSchedule } from '@/context/ScheduleContext';
 import type { TermSummary } from '@/lib/data/courseData';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { localePath } from '@/lib/i18n/config';
 
-export default function CourseBrowser({ termId, termName, terms }: { termId: string, termName: string, terms: TermSummary[] }) {
+export default function CourseBrowser({ termId, heading, officialName, terms }: { termId: string, heading: string, officialName: string, terms: TermSummary[] }) {
     const { selectedCourses } = useSchedule();
+    const { locale, t } = useI18n();
 
     return (
         <div className="min-h-screen bg-white text-slate-800 p-4 sm:p-8">
@@ -17,14 +20,14 @@ export default function CourseBrowser({ termId, termName, terms }: { termId: str
                 {/* Header with Cart Indicator */}
                 <div className="flex flex-col gap-4 pb-6 border-b border-slate-200">
                     <div className="flex justify-between items-start">
-                        <Link href="/archive" className="flex items-center text-slate-500 hover:text-blue-600 gap-2 transition-colors">
-                            <ArrowLeft className="w-4 h-4" /> Back to Terms
+                        <Link href={localePath(locale, '/archive')} className="flex items-center text-slate-500 hover:text-blue-600 gap-2 transition-colors">
+                            <ArrowLeft className="w-4 h-4" /> {t.archive.backToTerms}
                         </Link>
 
                         {/* Simple Cart Preview */}
                         {selectedCourses.length > 0 && (
-                            <Link href="/calendar" className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full font-bold animate-in fade-in hover:bg-blue-700 transition">
-                                {selectedCourses.length} in Schedule
+                            <Link href={localePath(locale, '/calendar')} className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full font-bold animate-in fade-in hover:bg-blue-700 transition">
+                                {selectedCourses.length} {t.archive.inSchedule}
                             </Link>
                         )}
                     </div>
@@ -32,8 +35,13 @@ export default function CourseBrowser({ termId, termName, terms }: { termId: str
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold font-display text-slate-900">
-                                {termName.replace(/_/g, ' ')}
+                                {heading}
                             </h1>
+                            {/* The name OBS publishes, kept alongside the heading so the
+                                official wording is still on the page and searchable. */}
+                            <p className="mt-1 text-sm text-slate-500">
+                                {officialName.replace(/_/g, ' ')}
+                            </p>
                         </div>
                     </div>
                 </div>

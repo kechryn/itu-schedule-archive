@@ -1,22 +1,11 @@
-import type { Metadata } from 'next';
-
 import Wizard from '@/components/wizard/Wizard';
 import WizardHelp from '@/components/wizard/WizardHelp';
-import { pageMetadata } from '@/lib/seo/site';
+import type { Locale } from '@/lib/i18n/config';
+import { getDictionary } from '@/lib/i18n/dictionaries';
 
-const wizardDescription =
-    'Pick your ITU courses, mark which are required and which are electives, ' +
-    'choose the days you want free, and generate conflict-free timetables from ' +
-    'every combination of sections that fits.';
+export default function WizardPage({ locale }: { locale: Locale }) {
+    const t = getDictionary(locale);
 
-export const metadata: Metadata = pageMetadata({
-    title: 'Schedule Wizard',
-    socialTitle: 'ITU Schedule Wizard',
-    description: wizardDescription,
-    path: '/wizard/',
-});
-
-export default function WizardPage() {
     return (
         <div className="min-h-screen bg-[#F5F5F7] animate-in fade-in duration-500">
             {/* Header */}
@@ -25,12 +14,12 @@ export default function WizardPage() {
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">
-                                Schedule <span className="text-blue-600">Wizard.</span>
+                                {t.wizard.titleLead} <span className="text-blue-600">{t.wizard.titleAccent}</span>
                             </h1>
                             <WizardHelp />
                         </div>
                         <p className="mt-4 text-lg text-slate-500 max-w-2xl font-light leading-relaxed">
-                            Automatically generate conflict-free schedules based on your selected courses and free days.
+                            {t.wizard.intro}
                         </p>
                     </div>
                 </div>

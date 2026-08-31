@@ -1,5 +1,5 @@
 import { getArchiveStats, getIndexGeneratedAt, getStaticTerms } from '@/lib/data/build';
-import { OBS_URL, REPO_URL, SITE_NAME, absoluteUrl, termLabel } from '@/lib/seo/site';
+import { OBS_URL, REPO_URL, SITE_NAMES, absoluteUrl, termLabel } from '@/lib/seo/site';
 
 export const dynamic = 'force-static';
 
@@ -12,6 +12,11 @@ export const dynamic = 'force-static';
  * execute JavaScript sees no courses at all. Pointing straight at the JSON is
  * both more accurate and far cheaper for whoever is asking.
  *
+ * Written in English, with the Turkish names alongside, because the terms a
+ * Turkish student asks an assistant about — "İTÜ ders programı", a course code,
+ * a term name — have to be matchable here even though the document itself is
+ * one language.
+ *
  * Generated rather than committed so the term list cannot fall behind the
  * scraper.
  */
@@ -20,13 +25,15 @@ export async function GET() {
     const stats = getArchiveStats();
     const newest = terms[0];
     const oldest = terms[terms.length - 1];
+    const root = absoluteUrl('/', 'tr');
 
-    const body = `# ${SITE_NAME}
+    const body = `# ${SITE_NAMES.tr} (${SITE_NAMES.en})
 
-> Course schedules for Istanbul Technical University (İTÜ), covering ${stats.termCount} terms
-> from ${termLabel(oldest.year, oldest.season)} to ${termLabel(newest.year, newest.season)} —
-> ${stats.courseCount.toLocaleString('en-US')} course sections in total — plus a planner that
-> builds conflict-free timetables from a set of chosen courses.
+> Course schedules for Istanbul Technical University (İstanbul Teknik Üniversitesi, İTÜ),
+> covering ${stats.termCount} terms from ${termLabel(oldest.year, oldest.season)} to
+> ${termLabel(newest.year, newest.season)} — ${stats.courseCount.toLocaleString('en-US')} course
+> sections in total — plus a planner that builds conflict-free timetables from a set of chosen
+> courses. Turkish: İTÜ ders programı arşivi ve ders programı oluşturucu.
 
 Data is scraped from ITU's public course schedule system (${OBS_URL}) on the 1st
 and 15th of each month. Only the term ITU is currently publishing gets refreshed;
@@ -35,13 +42,22 @@ earlier terms are final. Last refreshed: ${getIndexGeneratedAt()}.
 This is an unofficial project and is not affiliated with or endorsed by Istanbul
 Technical University. The course data belongs to ITU.
 
+## Languages
+
+Turkish is the default and lives at the root; English is under /en. The two are the
+same pages, linked by hreflang.
+
+- Turkish: ${absoluteUrl('/', 'tr')}
+- English: ${absoluteUrl('/', 'en')}
+
 ## Reading the data directly
 
 The pages render their course tables in the browser after fetching JSON, so
-fetching the HTML will not show you any courses. Use these instead:
+fetching the HTML will not show you any courses. Use these instead. The data is
+language-neutral — course titles are whatever ITU published, Turkish or English.
 
-- [Term index](${absoluteUrl('/')}data/index.json): every term with its id, name, section count and levels.
-- [One term](${absoluteUrl('/')}data/terms/${newest.id}.json): every section in that term. Swap the id for any term below.
+- [Term index](${root}data/index.json): every term with its id, name, section count and levels.
+- [One term](${root}data/terms/${newest.id}.json): every section in that term. Swap the id for any term below.
 
 A term file is \`{ id, name, rows }\`. Each row is a positional array, not an
 object, in this field order:
@@ -62,21 +78,23 @@ graduate_evening. Missing values are \`--\`, not null.
 
 ## Pages
 
-- [Home](${absoluteUrl('/')}): what the site is.
-- [Course archive](${absoluteUrl('/archive/')}): pick a term, level and subject code.
-- [Schedule wizard](${absoluteUrl('/wizard/')}): generate conflict-free timetables from chosen courses, with free-day and start-time constraints.
-- [Weekly calendar](${absoluteUrl('/calendar/')}): the selected courses on a weekly grid, exportable to PNG, JPG, SVG or PDF.
-- [About](${absoluteUrl('/about/')}): data source and refresh cadence.
+- [Home](${absoluteUrl('/', 'tr')}) / [English](${absoluteUrl('/', 'en')}): what the site is.
+- [Course archive](${absoluteUrl('/archive/', 'tr')}) / [English](${absoluteUrl('/archive/', 'en')}): pick a term, level and subject code.
+- [Schedule wizard](${absoluteUrl('/wizard/', 'tr')}) / [English](${absoluteUrl('/wizard/', 'en')}): generate conflict-free timetables from chosen courses, with free-day and start-time constraints.
+- [Weekly calendar](${absoluteUrl('/calendar/', 'tr')}) / [English](${absoluteUrl('/calendar/', 'en')}): the selected courses on a weekly grid, exportable to PNG, JPG, SVG or PDF.
+- [About](${absoluteUrl('/about/', 'tr')}) / [English](${absoluteUrl('/about/', 'en')}): data source and refresh cadence.
 - [Source code](${REPO_URL}): the scraper and the site.
 
 ## Terms
 
+Seasons are Güz (Fall), Bahar (Spring) and Yaz (Summer).
+
 ${terms
     .map(
         (t) =>
-            `- [${termLabel(t.year, t.season)}](${absoluteUrl(`/archive/${t.id}/`)}): ` +
+            `- [${termLabel(t.year, t.season)}](${absoluteUrl(`/archive/${t.id}/`, 'tr')}): ` +
             `${t.courseCount.toLocaleString('en-US')} sections. ` +
-            `JSON: ${absoluteUrl('/')}data/terms/${t.id}.json`
+            `JSON: ${root}data/terms/${t.id}.json`
     )
     .join('\n')}
 `;

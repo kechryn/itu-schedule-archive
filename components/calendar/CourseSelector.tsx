@@ -6,8 +6,10 @@ import { useSchedule } from '@/context/ScheduleContext';
 import ModernSelect from '@/components/ui/ModernSelect';
 import { getTerms, getTerm, TermStore, type Course } from '@/lib/data/client';
 import { parseTermName, type TermSummary } from '@/lib/data/courseData';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 export default function CourseSelector() {
+    const { t } = useI18n();
     const { addCourse, isCourseSelected } = useSchedule();
 
     const [terms, setTerms] = useState<TermSummary[]>([]);
@@ -112,30 +114,30 @@ export default function CourseSelector() {
                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                         <Plus className="w-5 h-5" />
                     </div>
-                    Add Courses
+                    {t.calendar.selector.addCourses}
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3">
                     {/* Term Selector */}
                     <ModernSelect
-                        label="Term"
+                        label={t.calendar.selector.term}
                         value={selectedTermId}
                         onChange={(val) => setSelectedTermId(val)}
                         options={parsedTerms.map(t => ({ label: t.displayName, value: t.id }))}
-                        placeholder="Select Term"
+                        placeholder={t.calendar.selector.selectTerm}
                         disabled={!termsLoaded}
                     />
 
                     {/* Level Selector */}
                     <ModernSelect
-                        label="Level"
+                        label={t.calendar.selector.level}
                         value={selectedLevel}
                         onChange={(val) => setSelectedLevel(val)}
                         options={[
-                            { label: 'All Levels', value: '' },
+                            { label: t.calendar.selector.allLevels, value: '' },
                             ...levels.map(l => ({ label: l, value: l }))
                         ]}
-                        placeholder="Select Level"
+                        placeholder={t.calendar.selector.selectLevel}
                         disabled={levels.length === 0}
                     />
                 </div>
@@ -143,7 +145,7 @@ export default function CourseSelector() {
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder="Search (e.g. MAT 103)..."
+                        placeholder={t.calendar.selector.searchPlaceholder}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         className="w-full bg-slate-100/50 border border-slate-200/50 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all placeholder:text-slate-400 font-medium"
@@ -164,7 +166,7 @@ export default function CourseSelector() {
                     >
                         <div className="font-bold text-slate-800 text-sm flex justify-between items-center relative z-10">
                             {course.code}
-                            <span className="text-blue-600 opacity-0 group-hover:opacity-100 text-[10px] font-bold uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full transition-all transform translate-x-2 group-hover:translate-x-0">Sections</span>
+                            <span className="text-blue-600 opacity-0 group-hover:opacity-100 text-[10px] font-bold uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full transition-all transform translate-x-2 group-hover:translate-x-0">{t.calendar.selector.sections}</span>
                         </div>
                         <div className="text-xs text-slate-500 truncate mt-0.5 relative z-10 font-medium">{course.title}</div>
                     </button>
@@ -177,7 +179,7 @@ export default function CourseSelector() {
                             onClick={() => setSelectedCourseCode(null)}
                             className="text-xs text-slate-500 hover:text-blue-600 flex items-center gap-1 mb-2 font-bold uppercase tracking-wide px-1"
                         >
-                            &larr; Back to results
+                            {t.calendar.selector.backToResults}
                         </button>
 
                         <div className="flex items-center justify-between px-1">
@@ -212,7 +214,7 @@ export default function CourseSelector() {
                         })}
 
                         {sections.length === 0 && (
-                            <div className="text-center py-6 text-slate-400 text-xs font-medium bg-slate-50 rounded-2xl border border-dashed border-slate-200">No sections found.</div>
+                            <div className="text-center py-6 text-slate-400 text-xs font-medium bg-slate-50 rounded-2xl border border-dashed border-slate-200">{t.calendar.selector.noSections}</div>
                         )}
                     </div>
                 )}
@@ -221,7 +223,7 @@ export default function CourseSelector() {
                 {!selectedCourseCode && searchResults.length === 0 && (
                     <div className="text-center py-12 text-slate-400 text-sm flex flex-col items-center">
                         <Search className="w-8 h-8 mb-3 opacity-20" />
-                        <span className="font-medium">{query.length < 2 ? 'Type to search...' : 'No courses found'}</span>
+                        <span className="font-medium">{query.length < 2 ? t.calendar.selector.typeToSearch : t.calendar.selector.noCourses}</span>
                     </div>
                 )}
             </div>

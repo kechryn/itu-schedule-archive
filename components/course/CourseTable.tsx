@@ -5,9 +5,11 @@ import { useSchedule } from '@/context/ScheduleContext';
 import { Plus, Minus, Search, Calendar, Clock, X } from 'lucide-react';
 import { parseSchedule } from '@/lib/schedule/scheduler';
 import type { Course } from '@/lib/data/courseData';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 export default function CourseTable({ courses }: { courses: Course[] }) {
     const { isCourseSelected, toggleCourse, selectedCourses } = useSchedule();
+    const { t } = useI18n();
 
     // Search & Filter State
     const [searchTerm, setSearchTerm] = useState('');
@@ -53,7 +55,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
     // Helper to render grouped schedule
     const renderSchedule = (course: Course) => {
         const sessions = parseSchedule(course.times || '', course.days || '');
-        if (sessions.length === 0) return <span className="text-slate-400 italic">TBA</span>;
+        if (sessions.length === 0) return <span className="text-slate-400 italic">{t.table.tba}</span>;
 
         // Group by time to show nicely: "Mon, Wed 08:30-10:29"
         const groups: Record<string, string[]> = {};
@@ -67,7 +69,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
             <div className="flex flex-col gap-1">
                 {Object.entries(groups).map(([time, days], idx) => (
                     <div key={idx} className="flex flex-col">
-                        <span className="font-bold text-slate-700 text-xs">{days.join(', ')}</span>
+                        <span className="font-bold text-slate-700 text-xs">{days.map(d => t.table.days[d] ?? d).join(', ')}</span>
                         <span className="text-xs text-slate-500">{time}</span>
                     </div>
                 ))}
@@ -75,7 +77,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
         );
     };
 
-    if (courses.length === 0) return <div className="text-slate-500 py-4">No courses found.</div>;
+    if (courses.length === 0) return <div className="text-slate-500 py-4">{t.table.noCourses}</div>;
 
     return (
         <div className="relative space-y-4">
@@ -88,7 +90,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
-                        placeholder="Search by code, title, or instructor..."
+                        placeholder={t.table.searchPlaceholder}
                         className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -112,12 +114,12 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                             value={dayFilter}
                             onChange={(e) => setDayFilter(e.target.value)}
                         >
-                            <option value="">All Days</option>
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Friday">Friday</option>
+                            <option value="">{t.table.allDays}</option>
+                            <option value="Monday">{t.table.days.Monday}</option>
+                            <option value="Tuesday">{t.table.days.Tuesday}</option>
+                            <option value="Wednesday">{t.table.days.Wednesday}</option>
+                            <option value="Thursday">{t.table.days.Thursday}</option>
+                            <option value="Friday">{t.table.days.Friday}</option>
                         </select>
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-400"></div>
                     </div>
@@ -129,9 +131,9 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                             value={timeFilter}
                             onChange={(e) => setTimeFilter(e.target.value)}
                         >
-                            <option value="">Any Time</option>
-                            <option value="Morning">Morning</option>
-                            <option value="Afternoon">Afternoon</option>
+                            <option value="">{t.table.anyTime}</option>
+                            <option value="Morning">{t.table.morning}</option>
+                            <option value="Afternoon">{t.table.afternoon}</option>
                         </select>
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-400"></div>
                     </div>
@@ -141,7 +143,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                             onClick={() => { setSearchTerm(''); setDayFilter(''); setTimeFilter(''); }}
                             className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors whitespace-nowrap"
                         >
-                            Reset
+                            {t.table.reset}
                         </button>
                     )}
                 </div>
@@ -150,7 +152,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
             {/* Results Info */}
             {isFiltered && (
                 <div className="text-sm text-slate-500 px-1">
-                    Showing {filteredCourses.length} of {courses.length} courses
+                    {t.table.showing(filteredCourses.length, courses.length)}
                 </div>
             )}
 
@@ -159,14 +161,14 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                 <table className="w-full text-left border-separate border-spacing-y-3 -mt-3 border-none">
                     <thead>
                         <tr className="text-xs uppercase font-bold text-slate-400 tracking-wider">
-                            <th className="px-5 pb-2 text-center w-16">Action</th>
-                            <th className="px-5 pb-2">CRN</th>
-                            <th className="px-5 pb-2">Code</th>
-                            <th className="px-5 pb-2">Title</th>
-                            <th className="px-5 pb-2">Instructor</th>
-                            <th className="px-5 pb-2">Day/Time</th>
-                            <th className="px-5 pb-2">Building</th>
-                            <th className="px-5 pb-2 w-28">Stats</th>
+                            <th className="px-5 pb-2 text-center w-16">{t.table.action}</th>
+                            <th className="px-5 pb-2">{t.table.crn}</th>
+                            <th className="px-5 pb-2">{t.table.code}</th>
+                            <th className="px-5 pb-2">{t.table.title}</th>
+                            <th className="px-5 pb-2">{t.table.instructor}</th>
+                            <th className="px-5 pb-2">{t.table.dayTime}</th>
+                            <th className="px-5 pb-2">{t.table.building}</th>
+                            <th className="px-5 pb-2 w-28">{t.table.stats}</th>
                         </tr>
                     </thead>
                     <tbody className="text-sm text-slate-600">
@@ -187,7 +189,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                                                     ? 'bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-red-100'
                                                     : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-blue-100'
                                                     }`}
-                                                title={selected ? "Remove from Schedule" : "Add to Schedule"}
+                                                title={selected ? t.table.removeFromSchedule : t.table.addToSchedule}
                                             >
                                                 {selected ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                             </button>
@@ -214,7 +216,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                                         <td className={`bg-white rounded-r-2xl shadow-sm border-y border-r border-slate-100 px-4 py-4 align-middle group-hover:shadow-md transition-all relative ${selected ? 'bg-blue-50/30 border-blue-200' : ''}`}>
                                             <div className="flex flex-col gap-1.5">
                                                 <div className="flex justify-between text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                                    <span>Enrolled</span>
+                                                    <span>{t.table.enrolled}</span>
                                                     <span className="text-slate-600">{course.enrolled || 0}/{course.capacity || 0}</span>
                                                 </div>
                                                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -235,10 +237,10 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                                                 <div className="absolute right-0 top-full mt-2 z-50 w-64 bg-white rounded-2xl shadow-xl shadow-blue-900/10 border border-slate-200/60 p-4 pointer-events-none animate-in fade-in zoom-in-95 duration-200 origin-top-right backdrop-blur-md">
                                                     <div className="text-xs font-bold text-slate-500 mb-3 flex items-center gap-1.5 uppercase tracking-wider">
                                                         <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                                                        Schedule Preview
+                                                        {t.table.schedulePreview}
                                                     </div>
                                                     <div className="grid grid-cols-5 gap-1 h-32 text-[10px] text-slate-400 font-mono">
-                                                        {['M', 'T', 'W', 'R', 'F'].map(d => (
+                                                        {t.table.dayInitials.map(d => (
                                                             <div key={d} className="text-center pb-1 border-b border-slate-100">{d}</div>
                                                         ))}
                                                         {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(dayName => {
@@ -281,7 +283,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                         ) : (
                             <tr>
                                 <td colSpan={8} className="px-4 py-16 text-center text-slate-400 italic bg-white rounded-3xl border border-slate-100 border-dashed">
-                                    No courses match your filters.
+                                    {t.table.noMatch}
                                 </td>
                             </tr>
                         )}
@@ -326,21 +328,21 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                     {/* Instructor */}
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Instructor</span>
-                                        <span className="text-slate-600 text-xs line-clamp-2">{course.instructor || 'TBA'}</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">{t.table.instructor}</span>
+                                        <span className="text-slate-600 text-xs line-clamp-2">{course.instructor || t.table.tba}</span>
                                     </div>
 
                                     {/* Building */}
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Location</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">{t.table.location}</span>
                                         <span className="text-slate-600 text-xs">
-                                            {course.building || 'TBA'} {course.rooms ? `- ${course.rooms}` : ''}
+                                            {course.building || t.table.tba} {course.rooms ? `- ${course.rooms}` : ''}
                                         </span>
                                     </div>
 
                                     {/* Schedule */}
                                     <div className="flex flex-col col-span-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Schedule</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">{t.table.schedule}</span>
                                         <div className="text-slate-600">{renderSchedule(course)}</div>
                                     </div>
                                 </div>
@@ -348,7 +350,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                                 {/* Stats Bar */}
                                 <div className="mt-4 pt-3 border-t border-slate-100">
                                     <div className="flex justify-between items-center mb-1.5">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Enrollment</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{t.table.enrollment}</span>
                                         <span className="text-xs font-medium text-slate-600">{course.enrolled || 0}/{course.capacity || 0}</span>
                                     </div>
                                     <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -368,7 +370,7 @@ export default function CourseTable({ courses }: { courses: Course[] }) {
                     })
                 ) : (
                     <div className="px-4 py-16 text-center text-slate-400 italic bg-white rounded-3xl border border-slate-100 border-dashed">
-                        No courses match your filters.
+                        {t.table.noMatch}
                     </div>
                 )}
             </div>

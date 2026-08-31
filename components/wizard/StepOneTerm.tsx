@@ -7,6 +7,7 @@ import { WizardState } from './Wizard';
 import ModernSelect from '@/components/ui/ModernSelect';
 import { getTerms, prefetchTerm } from '@/lib/data/client';
 import { parseTermName, type TermSummary } from '@/lib/data/courseData';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 interface StepOneTermProps {
     selectedTerm: string;
@@ -15,6 +16,7 @@ interface StepOneTermProps {
 }
 
 export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOneTermProps) {
+    const { t } = useI18n();
     const [terms, setTerms] = useState<TermSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [importing, setImporting] = useState(false);
@@ -126,7 +128,7 @@ export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOn
     if (loading) return (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
-            <p>Loading terms...</p>
+            <p>{t.wizard.one.loadingTerms}</p>
         </div>
     );
 
@@ -140,9 +142,9 @@ export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOn
                         <div>
                             <h3 className="font-bold text-blue-900 flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-blue-600" />
-                                Have a previous configuration?
+                                {t.wizard.one.importTitle}
                             </h3>
-                            <p className="text-sm text-blue-700/70 mt-1">Import a .itusched file to restore your previous wizard setup.</p>
+                            <p className="text-sm text-blue-700/70 mt-1">{t.wizard.one.importBody}</p>
                         </div>
                         <button
                             onClick={handleImportClick}
@@ -150,7 +152,7 @@ export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOn
                             className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 disabled:opacity-50"
                         >
                             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                            Import Config
+                            {t.wizard.one.importButton}
                         </button>
                         <input
                             ref={fileInputRef}
@@ -168,9 +170,9 @@ export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOn
                     <Calendar className="w-8 h-8" />
                 </div>
                 <h2 className="text-3xl font-bold text-slate-900">
-                    Select Academic Term
+                    {t.wizard.one.heading}
                 </h2>
-                <p className="text-slate-500 max-w-md mx-auto">Choose the academic year and semester to begin planning your schedule.</p>
+                <p className="text-slate-500 max-w-md mx-auto">{t.wizard.one.body}</p>
             </div>
 
             <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 relative">
@@ -179,22 +181,22 @@ export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOn
 
                 <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-500 uppercase tracking-wider ml-1">Academic Year</label>
+                        <label className="text-sm font-bold text-slate-500 uppercase tracking-wider ml-1">{t.wizard.one.academicYear}</label>
                         <ModernSelect
                             value={selectedYear}
                             onChange={(val) => { setYearOverride(val); setSeasonOverride(null); }}
                             options={uniqueYears.map(y => ({ label: y, value: y }))}
-                            placeholder="Select Year"
+                            placeholder={t.wizard.one.selectYear}
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-500 uppercase tracking-wider ml-1">Semester</label>
+                        <label className="text-sm font-bold text-slate-500 uppercase tracking-wider ml-1">{t.wizard.one.semester}</label>
                         <ModernSelect
                             value={selectedSeason}
                             onChange={setSeasonOverride}
                             options={availableSeasons}
-                            placeholder="Select Semester"
+                            placeholder={t.wizard.one.selectSemester}
                             disabled={!selectedYear}
                         />
                     </div>
@@ -207,7 +209,7 @@ export default function StepOneTerm({ selectedTerm, onSelect, onImport }: StepOn
                             <Calendar className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Selected Term</p>
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">{t.wizard.one.selectedTerm}</p>
                             <p className="text-blue-900 font-bold">
                                 {parsedTerms.find(t => t.id === selectedTerm)?.originalName}
                             </p>

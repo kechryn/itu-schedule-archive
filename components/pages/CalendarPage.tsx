@@ -5,6 +5,7 @@ import { useSchedule } from '@/context/ScheduleContext';
 import { Calendar as CalendarIcon, X, AlertCircle, Clock, AlertTriangle } from 'lucide-react';
 
 import CourseSelector from '@/components/calendar/CourseSelector';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 import ExportImportToolbar from '@/components/calendar/ExportImportToolbar';
 import CalendarHelp from '@/components/calendar/CalendarHelp';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -34,6 +35,7 @@ const DAY_NAMES: Record<string, string> = {
 const MINUTES_PER_DAY = 1440;
 
 export default function CalendarPage() {
+    const { t } = useI18n();
     const { selectedCourses, removeCourse, conflicts, importCourses } = useSchedule();
 
     /**
@@ -144,10 +146,10 @@ export default function CalendarPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Weekly <span className="text-blue-600">Planner.</span></h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.calendar.titleLead} <span className="text-blue-600">{t.calendar.titleAccent}</span></h1>
                         <CalendarHelp />
                     </div>
-                    <p className="text-slate-500 text-sm mt-1 font-medium">Drag courses from the sidebar to visualize your week.</p>
+                    <p className="text-slate-500 text-sm mt-1 font-medium">{t.calendar.intro}</p>
                 </div>
             </div>
 
@@ -159,9 +161,9 @@ export default function CalendarPage() {
                             <AlertTriangle className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-red-900 text-sm">Schedule Conflict Detected</h3>
+                            <h3 className="font-bold text-red-900 text-sm">{t.calendar.conflictTitle}</h3>
                             <p className="text-xs text-red-700 font-medium">
-                                {conflicts.length} overlapping course pairs found.
+                                {t.calendar.conflictBody(conflicts.length)}
                             </p>
                         </div>
                     </div>
@@ -177,7 +179,7 @@ export default function CalendarPage() {
                         : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
-                    Schedule
+                    {t.calendar.tabSchedule}
                 </button>
                 <button
                     onClick={() => setMobileTab('courses')}
@@ -186,7 +188,7 @@ export default function CalendarPage() {
                         : 'text-slate-500 hover:text-slate-700'
                         }`}
                 >
-                    Courses & Selection
+                    {t.calendar.tabCourses}
                 </button>
             </div>
 
@@ -203,14 +205,14 @@ export default function CalendarPage() {
                     <div className="flex-1 bg-white/60 backdrop-blur-md rounded-[2rem] border border-slate-200/60 p-5 flex flex-col shadow-lg shadow-slate-200/50 overflow-hidden hover:shadow-xl transition-all duration-300">
                         <h2 className="text-xs font-black font-display flex items-center gap-2 text-slate-400 mb-4 uppercase tracking-widest">
                             <CalendarIcon className="w-3.5 h-3.5" />
-                            Selected Items
+                            {t.calendar.selectedItems}
                         </h2>
 
                         <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                             {selectedCourses.length === 0 ? (
                                 <div className="text-center py-8 text-slate-400 text-xs font-medium">
                                     <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-20 text-blue-500" />
-                                    <p>No courses selected.</p>
+                                    <p>{t.calendar.noneSelected}</p>
                                 </div>
                             ) : (
                                 selectedCourses.map(c => {
@@ -249,7 +251,7 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white z-20">
                             <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-slate-400" />
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Time Grid</span>
+                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t.calendar.timeGrid}</span>
                             </div>
                             <ExportImportToolbar
                                 courses={selectedCourses}
@@ -263,9 +265,14 @@ export default function CalendarPage() {
                                 {/* Header Row */}
                                 <div className="flex mb-2 text-center font-semibold text-slate-500 text-xs border-b border-slate-100 pb-3 min-w-[700px] sticky top-0 bg-white/95 backdrop-blur-sm z-30">
                                     <div className="w-[60px] text-right pr-4 self-end opacity-40 font-normal shrink-0">GMT+3</div>
-                                    {daysOfWeek.map(d => (
-                                        <div key={d} className="flex-1 uppercase tracking-wide text-[10px] text-slate-400 font-bold">{d.slice(0, 3)}<span className="hidden sm:inline">{d.slice(3)}</span></div>
-                                    ))}
+                                    {daysOfWeek.map(d => {
+                                        // daysOfWeek holds the English names the course data
+                                        // uses as keys; only the label is translated.
+                                        const label = t.table.days[d] ?? d;
+                                        return (
+                                            <div key={d} className="flex-1 uppercase tracking-wide text-[10px] text-slate-400 font-bold">{label.slice(0, 3)}<span className="hidden sm:inline">{label.slice(3)}</span></div>
+                                        );
+                                    })}
                                 </div>
 
                                 {/* Timetable Body */}

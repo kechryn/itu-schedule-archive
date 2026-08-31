@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { Download, Upload, ChevronDown, Image as ImageIcon, FileText, FileImage, Loader2, Check, X } from 'lucide-react';
 import { importSelections, generateFilename, type ITUSchedData } from '@/lib/export/import';
 import type { Course } from '@/lib/data/courseData';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 interface ExportImportToolbarProps {
     courses: Course[];
@@ -11,6 +12,7 @@ interface ExportImportToolbarProps {
 }
 
 export default function ExportImportToolbar({ courses, onImport }: ExportImportToolbarProps) {
+    const { t } = useI18n();
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [exporting, setExporting] = useState(false);
     const [importing, setImporting] = useState(false);
@@ -36,7 +38,7 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
 
             if (format === 'itusched') {
                 exportSelections(courses, 'calendar', filename);
-                showNotification('success', 'Schedule exported successfully!');
+                showNotification('success', t.calendar.toolbar.exported);
                 return;
             }
 
@@ -52,10 +54,10 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
             } else {
                 await exportToImage(courses, format, filename, metadata);
             }
-            showNotification('success', `Exported as ${format.toUpperCase()}!`);
+            showNotification('success', t.calendar.toolbar.exportedAs(format.toUpperCase()));
         } catch (e) {
             console.error('Export failed', e);
-            showNotification('error', 'Export failed. Please try again.');
+            showNotification('error', t.calendar.toolbar.exportFailed);
         } finally {
             setExporting(false);
         }
@@ -80,14 +82,14 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
                 } else {
                     // No existing courses, import directly
                     onImport(data.courses);
-                    showNotification('success', `Imported ${data.courses.length} courses!`);
+                    showNotification('success', t.calendar.toolbar.imported(data.courses.length));
                 }
             } else {
-                showNotification('error', 'No valid course data found in file');
+                showNotification('error', t.calendar.toolbar.noData);
             }
         } catch (e) {
             console.error('Import failed', e);
-            showNotification('error', 'Failed to import file');
+            showNotification('error', t.calendar.toolbar.importFailed);
         } finally {
             setImporting(false);
             // Reset file input
@@ -98,7 +100,7 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
     const confirmImport = () => {
         if (pendingImport) {
             onImport(pendingImport.courses);
-            showNotification('success', `Imported ${pendingImport.courses.length} courses!`);
+            showNotification('success', t.calendar.toolbar.imported(pendingImport.courses.length));
         }
         setPendingImport(null);
         setShowImportConfirm(false);
@@ -127,22 +129,22 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/50" onClick={cancelImport} />
                     <div className="relative bg-white rounded-2xl shadow-xl p-6 max-w-md w-full animate-in zoom-in-95">
-                        <h3 className="text-lg font-bold text-slate-900 mb-2">Replace Current Schedule?</h3>
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">{t.calendar.toolbar.replaceTitle}</h3>
                         <p className="text-slate-600 text-sm mb-6">
-                            This will remove your current {courses.length} course(s) and import {pendingImport?.courses.length} course(s) from the file.
+                            {t.calendar.toolbar.replaceBody(courses.length, pendingImport?.courses.length ?? 0)}
                         </p>
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={cancelImport}
                                 className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
                             >
-                                Cancel
+                                {t.calendar.toolbar.cancel}
                             </button>
                             <button
                                 onClick={confirmImport}
                                 className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
                             >
-                                Replace & Import
+                                {t.calendar.toolbar.replace}
                             </button>
                         </div>
                     </div>
@@ -161,7 +163,7 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
                     ) : (
                         <Download className="w-4 h-4" />
                     )}
-                    Export
+                    {t.calendar.toolbar.export}
                     <ChevronDown className="w-3 h-3" />
                 </button>
 
@@ -175,28 +177,28 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <ImageIcon className="w-4 h-4 text-blue-500" />
-                                    PNG Image
+                                    {t.calendar.toolbar.png}
                                 </button>
                                 <button
                                     onClick={() => handleExport('jpg')}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <FileImage className="w-4 h-4 text-amber-500" />
-                                    JPG Image
+                                    {t.calendar.toolbar.jpg}
                                 </button>
                                 <button
                                     onClick={() => handleExport('svg')}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <FileImage className="w-4 h-4 text-purple-500" />
-                                    SVG Vector
+                                    {t.calendar.toolbar.svg}
                                 </button>
                                 <button
                                     onClick={() => handleExport('pdf')}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <FileText className="w-4 h-4 text-red-500" />
-                                    PDF Document
+                                    {t.calendar.toolbar.pdf}
                                 </button>
                                 <div className="border-t border-slate-100 my-1" />
                                 <button
@@ -204,7 +206,7 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <FileText className="w-4 h-4 text-emerald-500" />
-                                    ITU Sched File
+                                    {t.calendar.toolbar.itusched}
                                 </button>
                             </div>
                         </div>
@@ -223,7 +225,7 @@ export default function ExportImportToolbar({ courses, onImport }: ExportImportT
                 ) : (
                     <Upload className="w-4 h-4" />
                 )}
-                Import
+                {t.calendar.toolbar.import}
             </button>
 
             {/* Hidden File Input */}

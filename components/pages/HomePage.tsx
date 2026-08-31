@@ -2,44 +2,52 @@
 
 import Link from 'next/link';
 import { Database, Calendar, ArrowRight, GitFork } from 'lucide-react';
+
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { localePath } from '@/lib/i18n/config';
 
-const FEATURES = [
-  {
-    href: '/archive',
-    icon: Database,
-    iconClass: 'bg-blue-50 text-blue-600',
-    title: 'Course Archive',
-    description: 'Browse detailed course data from past semesters.',
-    linkLabel: 'Explore Archive',
-  },
-  {
-    href: '/wizard',
-    emoji: '🧙',
-    iconClass: 'bg-sky-50',
-    title: 'Schedule Wizard',
-    description: 'Generate conflict-free schedules from your course list in seconds.',
-    linkLabel: 'Launch Wizard',
-  },
-  {
-    href: '/calendar',
-    icon: Calendar,
-    iconClass: 'bg-indigo-50 text-indigo-600',
-    title: 'Weekly Calendar',
-    description: 'Visualize your week and export your schedule to PDF or image.',
-    linkLabel: 'Open Calendar',
-  },
-  {
-    href: '/about',
-    icon: GitFork,
-    iconClass: 'bg-slate-100 text-slate-600',
-    title: 'Open Source',
-    description: 'Fork the project on GitHub and adapt it for your own campus.',
-    linkLabel: 'Learn More',
-  },
-];
+/** One card either draws a lucide icon or an emoji, never both. */
+interface FeatureCard {
+  href: string;
+  iconClass: string;
+  title: string;
+  description: string;
+  link: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  emoji?: string;
+}
 
-export default function Home() {
+export default function HomePage() {
+  const { locale, t } = useI18n();
+
+  const features: FeatureCard[] = [
+    {
+      href: localePath(locale, '/archive'),
+      icon: Database,
+      iconClass: 'bg-blue-50 text-blue-600',
+      ...t.home.features.archive,
+    },
+    {
+      href: localePath(locale, '/wizard'),
+      emoji: '🧙',
+      iconClass: 'bg-sky-50',
+      ...t.home.features.wizard,
+    },
+    {
+      href: localePath(locale, '/calendar'),
+      icon: Calendar,
+      iconClass: 'bg-indigo-50 text-indigo-600',
+      ...t.home.features.calendar,
+    },
+    {
+      href: localePath(locale, '/about'),
+      icon: GitFork,
+      iconClass: 'bg-slate-100 text-slate-600',
+      ...t.home.features.source,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-[#F5F5F7]">
       <div className="max-w-6xl mx-auto px-6 py-16 sm:py-24 flex flex-col items-center">
@@ -47,26 +55,26 @@ export default function Home() {
         {/* Hero Section */}
         <ScrollReveal className="text-center max-w-2xl mx-auto mb-16">
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.15]">
-            ITU Course <span className="text-blue-600">Archive & Planner.</span>
+            {t.home.titleLead} <span className="text-blue-600">{t.home.titleAccent}</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-500 leading-relaxed font-light mb-10 max-w-xl mx-auto">
-            A fast, open-source planner for Istanbul Technical University students.
+            {t.home.subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/archive" className="px-8 py-3 bg-white text-slate-900 rounded-2xl text-base font-bold transition-colors hover:bg-slate-50 border border-slate-200 shadow-sm active:scale-95">
-              Browse Archive
+            <Link href={localePath(locale, '/archive')} className="px-8 py-3 bg-white text-slate-900 rounded-2xl text-base font-bold transition-colors hover:bg-slate-50 border border-slate-200 shadow-sm active:scale-95">
+              {t.home.browseArchive}
             </Link>
-            <Link href="/wizard" className="px-8 py-3 bg-slate-900 text-white rounded-2xl text-base font-bold transition-colors hover:bg-slate-800 shadow-sm active:scale-95">
-              Start Wizard
+            <Link href={localePath(locale, '/wizard')} className="px-8 py-3 bg-slate-900 text-white rounded-2xl text-base font-bold transition-colors hover:bg-slate-800 shadow-sm active:scale-95">
+              {t.home.startWizard}
             </Link>
           </div>
         </ScrollReveal>
 
         {/* Feature Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-4xl">
-          {FEATURES.map((feature, i) => (
+          {features.map((feature, i) => (
             <ScrollReveal key={feature.href} delay={i * 100}>
               <Link
                 href={feature.href}
@@ -82,7 +90,7 @@ export default function Home() {
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
                 <p className="text-slate-500 font-light mb-6">{feature.description}</p>
                 <span className="inline-flex items-center text-blue-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
-                  {feature.linkLabel} <ArrowRight className="w-4 h-4 ml-1.5" />
+                  {feature.link} <ArrowRight className="w-4 h-4 ml-1.5" />
                 </span>
               </Link>
             </ScrollReveal>
@@ -91,7 +99,7 @@ export default function Home() {
       </div>
 
       <footer className="text-center py-12 text-slate-400 text-sm">
-        <p>&copy; {new Date().getFullYear()} ITU Scheduler. Not affiliated with Istanbul Technical University.</p>
+        <p>&copy; {new Date().getFullYear()} {t.home.footer}</p>
       </footer>
     </main>
   );

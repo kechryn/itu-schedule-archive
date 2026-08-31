@@ -9,8 +9,10 @@ import { CheckCircle, AlertTriangle, Calendar, RefreshCcw, X, Layers, Download, 
 import Timetable from '@/components/course/Timetable';
 import { generateFilename, type ITUSchedData } from '@/lib/export/import';
 import { getTerm } from '@/lib/data/client';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 export default function StepFourResults({ data }: { data: WizardState }) {
+    const { t } = useI18n();
     const [schedules, setSchedules] = useState<GeneratedSchedule[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -110,7 +112,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
             } catch (e) {
                 console.error(e);
                 setError(
-                    e instanceof Error ? e.message : 'An error occurred while generating schedules.'
+                    e instanceof Error ? e.message : t.wizard.four.errorGeneric
                 );
             } finally {
                 setLoading(false);
@@ -118,7 +120,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
         };
 
         generate();
-    }, [data]);
+    }, [data, t.wizard.four.errorGeneric]);
 
     const [selectedSchedule, setSelectedSchedule] = useState<GeneratedSchedule | null>(null);
 
@@ -133,8 +135,8 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                         <RefreshCcw className="w-8 h-8 text-blue-500 animate-pulse" />
                     </div>
                 </div>
-                <h2 className="text-2xl font-bold mt-8 text-slate-900">Generating Schedules</h2>
-                <p className="text-slate-500 mt-2">Analyzing combinations...</p>
+                <h2 className="text-2xl font-bold mt-8 text-slate-900">{t.wizard.four.generating}</h2>
+                <p className="text-slate-500 mt-2">{t.wizard.four.analyzing}</p>
             </div>
         );
     }
@@ -143,7 +145,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center p-10">
                 <AlertTriangle className="w-16 h-16 text-red-500 mb-6" />
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">Something went wrong</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.wizard.four.errorTitle}</h2>
                 <p className="text-slate-500">{error}</p>
             </div>
         );
@@ -153,11 +155,8 @@ export default function StepFourResults({ data }: { data: WizardState }) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center p-10">
                 <AlertTriangle className="w-16 h-16 text-yellow-500 mb-6" />
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">No Valid Schedules Found</h2>
-                <p className="text-slate-500 max-w-md">
-                    We couldn&apos;t find any combination that satisfies all requirements.
-                    Try reducing constraints or changing &ldquo;Must&rdquo; courses to &ldquo;Selective&rdquo;.
-                </p>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.wizard.four.emptyTitle}</h2>
+                <p className="text-slate-500 max-w-md">{t.wizard.four.emptyBody}</p>
             </div>
         );
     }
@@ -166,14 +165,14 @@ export default function StepFourResults({ data }: { data: WizardState }) {
         <div className="h-full flex flex-col">
             <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Generated Schedules</h2>
-                    <p className="text-slate-500">Found {schedules.length} valid combinations</p>
+                    <h2 className="text-2xl font-bold text-slate-900">{t.wizard.four.heading}</h2>
+                    <p className="text-slate-500">{t.wizard.four.found(schedules.length)}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {schedules.length > 0 && (
                         <div className="bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200 text-sm font-bold flex items-center gap-2 shadow-sm">
                             <CheckCircle className="w-4 h-4" />
-                            Top Match: {schedules[0].match}%
+                            {t.wizard.four.topMatch}: {schedules[0].match}%
                         </div>
                     )}
                     <button
@@ -181,7 +180,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
                     >
                         <FileText className="w-4 h-4" />
-                        Export Wizard Config
+                        {t.wizard.four.exportConfig}
                     </button>
                 </div>
             </div>
@@ -193,11 +192,11 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                         <div className="p-5 flex-1">
                             <div className="flex justify-between items-start mb-4">
                                 <span className="bg-white/50 text-slate-500 text-xs font-mono px-2 py-1 rounded border border-white/60 backdrop-blur-sm">
-                                    Option #{idx + 1}
+                                    {t.wizard.four.option(idx + 1)}
                                 </span>
                                 <div className="flex items-center gap-3">
                                     <span className={`text-sm font-bold ${sched.match > 80 ? 'text-green-600' : 'text-yellow-600'}`}>
-                                        {sched.match}% Match
+                                        {sched.match}% {t.wizard.four.match}
                                     </span>
                                 </div>
                             </div>
@@ -212,7 +211,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                                 ))}
                                 {sched.courses.length > 3 && (
                                     <div className="text-xs text-center text-slate-400 pt-1">
-                                        + {sched.courses.length - 3} more courses
+                                        {t.wizard.four.moreCourses(sched.courses.length - 3)}
                                     </div>
                                 )}
                             </div>
@@ -225,7 +224,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                                 className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 flex items-center justify-center gap-2"
                             >
                                 <Calendar className="w-4 h-4" />
-                                View Timetable
+                                {t.wizard.four.viewTimetable}
                             </button>
                         </div>
                     </div>
@@ -241,9 +240,9 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                         {/* Modal Header */}
                         <div className="px-6 py-4 border-b border-blue-100 flex items-center justify-between bg-white/50 shrink-0 backdrop-blur-md">
                             <div>
-                                <h2 className="text-xl font-bold text-slate-900">Schedule Details</h2>
+                                <h2 className="text-xl font-bold text-slate-900">{t.wizard.four.details}</h2>
                                 <p className="text-sm text-slate-500">
-                                    {selectedSchedule.courses.length} Courses • {selectedSchedule.match}% Match
+                                    {t.wizard.four.coursesAndMatch(selectedSchedule.courses.length, selectedSchedule.match)}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -278,7 +277,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                             <div className="w-full lg:w-1/3 border-r border-blue-50 overflow-y-auto custom-scrollbar p-6 space-y-4 bg-white/40">
                                 <h3 className="font-bold text-slate-900 flex items-center gap-2">
                                     <Layers className="w-4 h-4 text-blue-600" />
-                                    Course List
+                                    {t.wizard.four.courseList}
                                 </h3>
                                 {selectedSchedule.courses.map(c => (
                                     <div key={c.crn} className="bg-white/80 p-4 rounded-xl border border-white/60 shadow-sm hover:border-blue-300 transition-all backdrop-blur-sm">
@@ -294,7 +293,7 @@ export default function StepFourResults({ data }: { data: WizardState }) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="w-4 text-center">📍</span>
-                                                {c.building || 'Unknown'}
+                                                {c.building || t.wizard.four.unknown}
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="w-4 text-center">⏰</span>
