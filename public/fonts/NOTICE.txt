@@ -1,0 +1,9 @@
+Roboto
+Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto)
+
+Licensed under the Apache License, Version 2.0.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Roboto-Regular.ttf and Roboto-Medium.ttf are vendored here so the PDF export
+can embed a font with Turkish glyph coverage without reaching a third-party CDN
+at runtime. They are the same builds jsPDF's pdfmake bundle ships.

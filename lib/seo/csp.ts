@@ -35,10 +35,10 @@ const DIRECTIVES: Record<string, string[]> = {
     // /_next/static/media, so no third-party font host is involved.
     'font-src': ["'self'", 'data:'],
 
-    // Course JSON is same-origin. cdnjs is the Roboto TTF that the PDF export
-    // pulls at runtime for Turkish glyph coverage — the one third party the
-    // site still talks to, and only when someone exports a PDF.
-    'connect-src': ["'self'", 'https://cdnjs.cloudflare.com'],
+    // Everything fetched at runtime — the course JSON and the Roboto TTFs the
+    // PDF export embeds — is served from this origin. The site reaches no
+    // third party at all.
+    'connect-src': ["'self'"],
 
     'worker-src': ["'self'", 'blob:'],
     'manifest-src': ["'self'"],

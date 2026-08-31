@@ -602,9 +602,13 @@ export async function exportToPDF(
         format: [widthPx, heightPx]
     });
 
-    // Embed Roboto font for Turkish support
+    // Embed Roboto for Turkish support. Served from this origin rather than a
+    // CDN: the files live in public/fonts, so an export cannot be broken by a
+    // third party being down or blocked, does not announce to anyone else that
+    // a schedule was exported, and cannot quietly return different bytes than
+    // the ones reviewed here. It also lets the CSP keep connect-src at 'self'.
     try {
-        const fontBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto';
+        const fontBaseUrl = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/fonts`;
 
         // Parallel fetch
         const [regularBytes, boldBytes] = await Promise.all([
