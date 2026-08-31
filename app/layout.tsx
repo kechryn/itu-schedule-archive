@@ -100,8 +100,17 @@ export default function RootLayout({
           The course tables are fetched and rendered in the browser, so a
           crawler that does not run JavaScript sees an empty page. /llms.txt
           describes the site and points at the underlying JSON instead.
+
+          Absolute, because Next only rewrites basePath into <Link> and asset
+          URLs — a root-relative href written here would leave the project
+          subpath off and point at the domain root.
         */}
-        <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+        <link
+          rel="alternate"
+          type="text/plain"
+          href={`${absoluteUrl('/')}llms.txt`}
+          title="llms.txt"
+        />
       </head>
       <body className={`${inter.variable} ${outfit.variable} antialiased min-h-screen flex flex-col pt-16`}>
         <JsonLd data={siteJsonLd()} />
