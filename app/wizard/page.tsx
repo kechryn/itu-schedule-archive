@@ -1,6 +1,20 @@
+import type { Metadata } from 'next';
 
 import Wizard from '@/components/wizard/Wizard';
 import WizardHelp from '@/components/wizard/WizardHelp';
+import { pageMetadata } from '@/lib/seo/site';
+
+const wizardDescription =
+    'Pick your ITU courses, mark which are required and which are electives, ' +
+    'choose the days you want free, and generate conflict-free timetables from ' +
+    'every combination of sections that fits.';
+
+export const metadata: Metadata = pageMetadata({
+    title: 'Schedule Wizard',
+    socialTitle: 'ITU Schedule Wizard',
+    description: wizardDescription,
+    path: '/wizard/',
+});
 
 export default function WizardPage() {
     return (

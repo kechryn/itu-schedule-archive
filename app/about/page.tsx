@@ -1,11 +1,20 @@
+import type { Metadata } from 'next';
+
 import { Database, Calendar, GitFork, ArrowRight } from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import { getArchiveStats } from '@/lib/data/build';
+import { pageMetadata } from '@/lib/seo/site';
 
-export const metadata = {
-    title: 'About — ITU Scheduler',
-    description: 'An open-source course archive and schedule planner for ITU students.',
-};
+const aboutDescription =
+    'Where the course data comes from, how often it is refreshed, and how the ' +
+    'archive and schedule planner are built. Open source, no account, no tracking.';
+
+export const metadata: Metadata = pageMetadata({
+    title: 'About',
+    socialTitle: 'About — ITU Schedule Archive',
+    description: aboutDescription,
+    path: '/about/',
+});
 
 export default function AboutPage() {
     // Totals come from the generated data index at build time.

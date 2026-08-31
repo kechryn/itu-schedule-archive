@@ -137,6 +137,82 @@ output directory `out`, no environment variables. `public/_headers` sets
 immutable caching for hashed assets and `stale-while-revalidate` for the course
 JSON. GitHub Pages ignores that file and sends its own cache headers.
 
+## Discoverability
+
+Every route sets its own title, description and canonical URL. The 27 term
+pages are the ones people search for, so `generateMetadata` gives each its own
+— naming the term both as `2026-2027 Fall` and by the Turkish name OBS
+publishes, because students search for either.
+
+- `app/sitemap.ts` emits `sitemap.xml` for all 32 URLs. Term pages carry the
+  scraper's timestamp as `lastModified` rather than the build time, so
+  rebuilding unchanged data does not re-date the whole archive.
+- `app/robots.ts` emits `robots.txt`. It names the assistant crawlers
+  explicitly — GPTBot, ClaudeBot, PerplexityBot and the rest — alongside the
+  catch-all. `Google-Extended` and `Applebot-Extended` are not crawlers but
+  opt-out switches for Gemini and Apple Intelligence, and only an explicit
+  `Allow` keeps this site in.
+- `lib/seo/jsonLd.ts` emits JSON-LD: `WebSite` and `WebApplication` site-wide,
+  `DataCatalog` on the archive index, `Dataset` and `BreadcrumbList` on each
+  term. A term of course schedules is a dataset, so the vocabulary is literal
+  rather than a stretch for rich-result eligibility.
+- `app/og.png/route.tsx` renders the 1200×630 social card at build time from
+  the data index, so the counts on the card cannot drift. It is a route handler
+  rather than the `opengraph-image` file convention: that convention emits an
+  extensionless file, and GitHub Pages types responses by extension, so the
+  card would go out as `application/octet-stream`.
+- `app/llms.txt/route.ts` emits `/llms.txt`, an index written for language
+  models. It documents the JSON files and the row format directly, since that
+  is both more accurate and cheaper than reading the rendered page.
+
+The catch is that the course table is client-side and renders nothing until a
+level and subject are chosen, so the pages carried no course text at all — not
+for a search engine, not for an assistant. `TermCatalog` fixes that by
+rendering the term's courses on the server: 3,506 courses under 213 subject
+codes for the current term. It is also just a usable index.
+
+That content has a cost. A server component's output is serialized into the RSC
+payload inline in the same document, so everything it renders is paid for
+twice, and the current term's page is 646 KB uncompressed — 118 KB over the
+wire, since GitHub Pages gzips. Keeping each entry to a single text node with no
+nested elements is what brought it down from 2 MB.
+
+## Security
+
+GitHub Pages sends `Strict-Transport-Security` and nothing else, and offers no
+way to add response headers. What can be set from inside the document is:
+
+- A CSP in a `<meta>` tag, built in `lib/seo/csp.ts`. It confines scripts,
+  styles, images, fonts and connections to this origin, plus `cdnjs` for the
+  PDF font below.
+- `Referrer-Policy` via `<meta name="referrer">`, set to
+  `strict-origin-when-cross-origin`.
+
+Two limits are worth stating rather than glossing:
+
+- `frame-ancestors` is ignored in a meta CSP, so framing cannot be blocked
+  here. The app holds nothing but a course selection in `localStorage` and has
+  no authenticated state, so the exposure is small — but a host that can send
+  headers should set `frame-ancestors` and `X-Frame-Options`.
+- `script-src` needs `'unsafe-inline'`. A static export has no server to mint a
+  per-request nonce, and Next inlines the RSC payload as `self.__next_f.push`
+  calls. The directive still blocks an injected `<script src="//elsewhere">`;
+  it cannot block an injected inline block.
+
+The PDF export fetches Roboto from `cdnjs.cloudflare.com` at runtime for
+Turkish glyph coverage (`lib/export/export.ts`). It is the only third party the
+site talks to, and only when someone exports a PDF, but it is unpinned and
+unverifiable — self-hosting the two TTFs would remove the dependency and let
+`connect-src` drop to `'self'`.
+
+Dependencies are clean in production after a `npm audit fix` that took jsPDF
+from 4.0.0 to 4.2.1, resolving a critical PDF-injection advisory and a
+transitive DOMPurify XSS. Three high-severity advisories remain in `postcss`
+and `sharp`, both reached only through Next's build tooling; clearing them
+needs Next 16.3.3, and neither is reachable here — they require
+attacker-controlled CSS or images, and the build only ever sees this repo's own
+files.
+
 ## Layout
 
 ```
