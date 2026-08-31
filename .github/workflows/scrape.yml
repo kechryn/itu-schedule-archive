@@ -42,5 +42,5 @@ jobs:
           else
             git commit -m "data: Refresh course schedules ($(date -u +%Y-%m-%d))"
             git push
-            echo "Pushed updated course data — Cloudflare Pages will redeploy."
+            echo "Pushed updated course data — the Pages deploy workflow will redeploy."
           fi

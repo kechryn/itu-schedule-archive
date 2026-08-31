@@ -36,7 +36,7 @@ Visualize your weekly schedule with:
 | **Framework** | Next.js 16 (App Router, static export) |
 | **Styling** | Tailwind CSS |
 | **Data** | Static JSON, one file per term |
-| **Hosting** | Any static host (Cloudflare Pages, GitHub Pages, Netlify) |
+| **Hosting** | GitHub Pages (any static host works) |
 | **Data Source** | ITU OBS (automated scraping) |
 
 There is **no database and no server**. `npm run build` emits a plain
@@ -122,18 +122,36 @@ npm run build     # -> ./out
 
 ---
 
-## ☁️ Deploying to Cloudflare Pages
+## ☁️ Deploying
 
-Connect the repository and use:
+### GitHub Pages (current)
 
-| Setting | Value |
-|---|---|
-| Build command | `npm run build` |
-| Output directory | `out` |
-| Environment variables | *(none)* |
+`.github/workflows/deploy.yml` builds and publishes on every push to `main`,
+so a scraper commit redeploys the site on its own. Repo setting:
+**Settings → Pages → Source: GitHub Actions**.
 
-`public/_headers` sets long-lived immutable caching for hashed assets and
-`stale-while-revalidate` for the course JSON, so repeat visits are near-instant.
+A project repo is served from `https://<user>.github.io/<repo>`, so the build
+needs to know that prefix. `actions/configure-pages` reads it from the Pages
+settings and passes it in as `NEXT_PUBLIC_BASE_PATH`:
+
+- `<Link>` and `/_next` URLs — Next rewrites these from `basePath`.
+- The course JSON — `lib/data/client.ts` calls `fetch()` by hand, which Next
+  cannot see, so it prefixes `NEXT_PUBLIC_BASE_PATH` itself.
+
+Attach a custom domain and the prefix resolves to `""`, with no code change.
+
+`trailingSlash: true` makes the export emit `archive/index.html` instead of
+`archive.html`. Next writes both a page file and a same-named directory of RSC
+payloads, and a static host asked for `/archive` then has to guess between the
+two — GitHub Pages picks the directory and 404s.
+
+### Other static hosts
+
+Cloudflare Pages or Netlify need no workflow — point them at the repo with
+build command `npm run build`, output directory `out`, and no environment
+variables. `public/_headers` sets long-lived immutable caching for hashed
+assets and `stale-while-revalidate` for the course JSON, so repeat visits are
+near-instant. GitHub Pages ignores that file and sends its own defaults.
 
 ---
 

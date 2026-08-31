@@ -23,8 +23,15 @@ export type { Course, TermSummary };
 /** How many decoded terms to keep resident. Each is a few MB of objects. */
 const MAX_CACHED_TERMS = 3;
 
+/**
+ * Set when the site is served from a subpath, e.g. a GitHub Pages project
+ * site. Next prefixes <Link> and /_next URLs itself, but not a hand-written
+ * fetch, so the data paths below have to add it explicitly.
+ */
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 async function fetchJson<T>(url: string): Promise<T> {
-    const res = await fetch(url);
+    const res = await fetch(`${BASE_PATH}${url}`);
     if (!res.ok) throw new Error(`Failed to load ${url} (${res.status})`);
     return res.json() as Promise<T>;
 }
