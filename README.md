@@ -101,7 +101,7 @@ to one per 300 ms, and takes a couple of minutes.
 
 ## Development
 
-Node.js 20 or newer.
+Node.js 20 or newer. CI builds on 22.
 
 ```bash
 git clone https://github.com/kechryn/itu-schedule-archive.git
@@ -200,8 +200,8 @@ GitHub Pages sends `Strict-Transport-Security` and nothing else, and offers no
 way to add response headers. What can be set from inside the document is:
 
 - A CSP in a `<meta>` tag, built in `lib/seo/csp.ts`. It confines scripts,
-  styles, images, fonts and connections to this origin, plus `cdnjs` for the
-  PDF font below.
+  styles, images, fonts and connections to this origin. `connect-src` is
+  `'self'` — the site reaches no third party at all.
 - `Referrer-Policy` via `<meta name="referrer">`, set to
   `strict-origin-when-cross-origin`.
 
@@ -216,19 +216,16 @@ Two limits are worth stating rather than glossing:
   calls. The directive still blocks an injected `<script src="//elsewhere">`;
   it cannot block an injected inline block.
 
-The PDF export fetches Roboto from `cdnjs.cloudflare.com` at runtime for
-Turkish glyph coverage (`lib/export/export.ts`). It is the only third party the
-site talks to, and only when someone exports a PDF, but it is unpinned and
-unverifiable — self-hosting the two TTFs would remove the dependency and let
-`connect-src` drop to `'self'`.
+The PDF export embeds Roboto for Turkish glyph coverage. Both TTFs are
+vendored in `public/fonts` and fetched from this origin, so an export cannot be
+broken by a CDN being down or blocked, does not tell a third party that someone
+exported a schedule, and cannot quietly receive different bytes than the ones
+in the repo. `public/fonts/NOTICE.txt` carries the Apache-2.0 attribution.
 
-Dependencies are clean in production after a `npm audit fix` that took jsPDF
-from 4.0.0 to 4.2.1, resolving a critical PDF-injection advisory and a
-transitive DOMPurify XSS. Three high-severity advisories remain in `postcss`
-and `sharp`, both reached only through Next's build tooling; clearing them
-needs Next 16.3.3, and neither is reachable here — they require
-attacker-controlled CSS or images, and the build only ever sees this repo's own
-files.
+`npm audit` reports no vulnerabilities, in production or including dev. Getting
+there took jsPDF from 4.0.0 to 4.2.1, clearing a critical PDF-injection
+advisory and a transitive DOMPurify XSS, and Next from 16.0.7 to 16.3.3,
+clearing high-severity advisories in the `postcss` and `sharp` it pulls in.
 
 ## Layout
 
